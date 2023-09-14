@@ -23,17 +23,15 @@ CREATE SCHEMA IF NOT EXISTS `pizzeriatest` DEFAULT CHARACTER SET utf8mb4 ;
 USE `mydb` ;
 
 -- -----------------------------------------------------
--- Table `pizzeriatest`.`clientes`
+-- Table `mydb`.`direcciones`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `pizzeriatest`.`clientes` (
-  `ID_Cliente` TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `Nombre` VARCHAR(50) NOT NULL,
-  `Apellido1` VARCHAR(50) NOT NULL,
-  `Apellido2` VARCHAR(50) NOT NULL,
-  `Telefono` VARCHAR(20) NULL,
-  PRIMARY KEY (`ID_Cliente`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4;
+CREATE TABLE IF NOT EXISTS `mydb`.`direcciones` (
+  `ID_dirrecion` INT NOT NULL,
+  `Direccion` VARCHAR(100) NOT NULL,
+  `CodigoPostal` VARCHAR(10) NOT NULL,
+  `Localidad` VARCHAR(50) NOT NULL,
+  `Provincia` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`ID_dirrecion`));
 
 
 -- -----------------------------------------------------
@@ -45,56 +43,14 @@ CREATE TABLE IF NOT EXISTS `pizzeriatest`.`tiendas` (
   `CodigoPostal` VARCHAR(10) NOT NULL,
   `Localidad` VARCHAR(50) NOT NULL,
   `Provincia` VARCHAR(50) NOT NULL,
-  PRIMARY KEY (`ID_Tienda`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`direcciones`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`direcciones` (
-  `ID_dirrecion` INT NOT NULL,
-  `Direccion` VARCHAR(100) NOT NULL,
-  `CodigoPostal` VARCHAR(10) NOT NULL,
-  `Localidad` VARCHAR(50) NOT NULL,
-  `Provincia` VARCHAR(50) NOT NULL,
-  `clientes_ID_Cliente` TINYINT(3) NULL,
-  `tiendas_ID_Tienda` TINYINT(3) NULL,
-  PRIMARY KEY (`ID_dirrecion`),
-  INDEX `fk_direcciones_clientes_idx` (`clientes_ID_Cliente` ASC),
-  INDEX `fk_direcciones_tiendas1_idx` (`tiendas_ID_Tienda` ASC),
-  CONSTRAINT `fk_direcciones_clientes`
-    FOREIGN KEY (`clientes_ID_Cliente`)
-    REFERENCES `pizzeriatest`.`clientes` (`ID_Cliente`)
+  `direcciones_ID_dirrecion` INT NOT NULL,
+  PRIMARY KEY (`ID_Tienda`),
+  INDEX `fk_tiendas_direcciones1_idx` (`direcciones_ID_dirrecion` ASC)   ,
+  CONSTRAINT `fk_tiendas_direcciones1`
+    FOREIGN KEY (`direcciones_ID_dirrecion`)
+    REFERENCES `mydb`.`direcciones` (`ID_dirrecion`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_direcciones_tiendas1`
-    FOREIGN KEY (`tiendas_ID_Tienda`)
-    REFERENCES `pizzeriatest`.`tiendas` (`ID_Tienda`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
-
-
--- -----------------------------------------------------
--- Table `pizzeriatest`.`pedidos`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `pizzeriatest`.`pedidos` (
-  `ID_Pedido` TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `FechaHora` DATETIME NOT NULL,
-  `Tipo` ENUM('domicilio', 'recoger') NOT NULL,
-  `ID_Cliente` TINYINT(3) UNSIGNED NOT NULL,
-  `ID_Tienda` TINYINT(3) UNSIGNED NOT NULL,
-  `PrecioTotal` DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (`ID_Pedido`),
-  INDEX `ID_Cliente` (`ID_Cliente` ASC)  ,
-  INDEX `ID_Tienda` (`ID_Tienda` ASC)  ,
-  CONSTRAINT `pedidos_ibfk_1`
-    FOREIGN KEY (`ID_Cliente`)
-    REFERENCES `pizzeriatest`.`clientes` (`ID_Cliente`),
-  CONSTRAINT `pedidos_ibfk_2`
-    FOREIGN KEY (`ID_Tienda`)
-    REFERENCES `pizzeriatest`.`tiendas` (`ID_Tienda`))
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4;
 
@@ -112,7 +68,7 @@ CREATE TABLE IF NOT EXISTS `pizzeriatest`.`empleados` (
   `Posicion` ENUM('cocinero', 'repartidor') NOT NULL,
   `ID_Tienda` TINYINT(3) UNSIGNED NOT NULL,
   PRIMARY KEY (`ID_Empleado`),
-  INDEX `ID_Tienda` (`ID_Tienda` ASC)  ,
+  INDEX `ID_Tienda` (`ID_Tienda` ASC)   ,
   CONSTRAINT `empleados_ibfk_1`
     FOREIGN KEY (`ID_Tienda`)
     REFERENCES `pizzeriatest`.`tiendas` (`ID_Tienda`))
@@ -124,17 +80,11 @@ DEFAULT CHARACTER SET = utf8mb4;
 -- Table `mydb`.`reparto`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`reparto` (
-  `pedidos_ID_Pedido` TINYINT(3) UNSIGNED NOT NULL,
+  `ID_reparto` TINYINT(3) NOT NULL,
   `empleados_ID_Empleado` TINYINT(3) UNSIGNED NOT NULL,
   `FechaHora_Entrega` DATETIME NOT NULL,
-  PRIMARY KEY (`pedidos_ID_Pedido`, `empleados_ID_Empleado`),
-  INDEX `fk_reparto_pedidos1_idx` (`pedidos_ID_Pedido` ASC)  ,
-  INDEX `fk_reparto_empleados1_idx` (`empleados_ID_Empleado` ASC)  ,
-  CONSTRAINT `fk_reparto_pedidos1`
-    FOREIGN KEY (`pedidos_ID_Pedido`)
-    REFERENCES `pizzeriatest`.`pedidos` (`ID_Pedido`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  PRIMARY KEY (`ID_reparto`, `empleados_ID_Empleado`),
+  INDEX `fk_reparto_empleados1_idx` (`empleados_ID_Empleado` ASC)   ,
   CONSTRAINT `fk_reparto_empleados1`
     FOREIGN KEY (`empleados_ID_Empleado`)
     REFERENCES `pizzeriatest`.`empleados` (`ID_Empleado`)
@@ -142,6 +92,58 @@ CREATE TABLE IF NOT EXISTS `mydb`.`reparto` (
     ON UPDATE NO ACTION);
 
 USE `pizzeriatest` ;
+
+-- -----------------------------------------------------
+-- Table `pizzeriatest`.`clientes`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pizzeriatest`.`clientes` (
+  `ID_Cliente` TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `Nombre` VARCHAR(50) NOT NULL,
+  `Apellido1` VARCHAR(50) NOT NULL,
+  `Apellido2` VARCHAR(50) NOT NULL,
+  `Telefono` VARCHAR(20) NULL,
+  `direcciones_ID_dirrecion` INT NOT NULL,
+  PRIMARY KEY (`ID_Cliente`),
+  INDEX `fk_clientes_direcciones1_idx` (`direcciones_ID_dirrecion` ASC)   ,
+  CONSTRAINT `fk_clientes_direcciones1`
+    FOREIGN KEY (`direcciones_ID_dirrecion`)
+    REFERENCES `mydb`.`direcciones` (`ID_dirrecion`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table `pizzeriatest`.`pedidos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pizzeriatest`.`pedidos` (
+  `ID_Pedido` TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `FechaHora` DATETIME NOT NULL,
+  `Tipo` ENUM('domicilio', 'recoger') NOT NULL,
+  `ID_Cliente` TINYINT(3) UNSIGNED NOT NULL,
+  `ID_Tienda` TINYINT(3) UNSIGNED NOT NULL,
+  `PrecioTotal` DECIMAL(10,2) NOT NULL,
+  `reparto_ID_reparto` TINYINT(3) NULL DEFAULT NULL,
+  `reparto_empleados_ID_Empleado` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
+  PRIMARY KEY (`ID_Pedido`),
+  INDEX `ID_Cliente` (`ID_Cliente` ASC),
+  INDEX `ID_Tienda` (`ID_Tienda` ASC),
+  INDEX `fk_pedidos_reparto1_idx` (`reparto_ID_reparto` ASC, `reparto_empleados_ID_Empleado` ASC),
+  CONSTRAINT `pedidos_ibfk_1`
+    FOREIGN KEY (`ID_Cliente`)
+    REFERENCES `pizzeriatest`.`clientes` (`ID_Cliente`),
+  CONSTRAINT `pedidos_ibfk_2`
+    FOREIGN KEY (`ID_Tienda`)
+    REFERENCES `pizzeriatest`.`tiendas` (`ID_Tienda`),
+  CONSTRAINT `fk_pedidos_reparto1`
+    FOREIGN KEY (`reparto_ID_reparto` , `reparto_empleados_ID_Empleado`)
+    REFERENCES `mydb`.`reparto` (`ID_reparto` , `empleados_ID_Empleado`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4;
+
 
 -- -----------------------------------------------------
 -- Table `pizzeriatest`.`productos`
@@ -152,8 +154,8 @@ CREATE TABLE IF NOT EXISTS `pizzeriatest`.`productos` (
   `Descripcion` VARCHAR(100) NULL DEFAULT NULL,
   `Imagen` VARCHAR(100) NULL DEFAULT NULL,
   `Precio` DECIMAL(10,2) NOT NULL,
-  `tipo_producto` VARCHAR(100) NOT NULL,
-  `categoria_producto` VARCHAR(100) NULL,
+  `tipo_producto` ENUM('pizza', 'hamburguesa', 'bebida') NOT NULL,
+  `categoria_producto` VARCHAR(100) NULL DEFAULT NULL,
   PRIMARY KEY (`ID_Producto`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4;
@@ -167,7 +169,7 @@ CREATE TABLE IF NOT EXISTS `pizzeriatest`.`detallespedido` (
   `ID_Producto` TINYINT(3) UNSIGNED NOT NULL,
   `Cantidad` INT(11) NOT NULL,
   PRIMARY KEY (`ID_Pedido`, `ID_Producto`),
-  INDEX `ID_Producto` (`ID_Producto` ASC) ,
+  INDEX `ID_Producto` (`ID_Producto` ASC)  ,
   CONSTRAINT `detallespedido_ibfk_1`
     FOREIGN KEY (`ID_Pedido`)
     REFERENCES `pizzeriatest`.`pedidos` (`ID_Pedido`),
